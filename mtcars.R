@@ -1,54 +1,62 @@
-#1 Carga de librerias y datos
-install.packages("dplyr")
+---
+title: "Análisis Exploratorio del Dataset `mtcars`"
+author: "Tu Nombre"
+output:
+  html_document:
+    theme: readable
+    toc: true
+    toc_depth: 2
+---
+
+# Introducción
+
+El propósito de este documento es realizar un **análisis exploratorio** del dataset `mtcars` en R. Este conjunto de datos contiene información sobre características de diferentes modelos de automóviles y será utilizado para demostrar capacidades de visualización y tabulación en R Markdown.
+
+**Puntos clave:**
+
+1. Descripción general de los datos.
+2. Creación de tablas estáticas e interactivas.
+3. Visualización gráfica de datos relevantes.
+4. Resumen de hallazgos principales.
+
+# Carga de datos
+
+Primero, cargamos el dataset `mtcars` disponible en R:
+
+```{r load-data, message=FALSE}
 library(dplyr)
-install.packages("tidyr")
-library(tidyr)
+library(knitr)
+library(DT)
+data("mtcars")
+head(mtcars)
+```
 
-data(mtcars)
-df <- as.data.frame(mtcars)
+# Análisis de datos
 
-#2 Selección de columnas y filtrado de filas
-df <- df %>% select(mpg,cyl,hp,gear)
-print(df)
-df <- df %>% filter(cyl>4)
-print(df)
+## Tabla estática
+```{r kable-table}
+kable(head(mtcars, 10), caption = "Primeras 10 filas del dataset `mtcars`.")
+```
 
-#3 Ordenación y renombrado de columnas
-df <- df %>% arrange(desc(hp))
-print(df)
-df <- df %>% rename(consumo=mpg)
-print(df)
-df <- df %>% rename(potencia=hp)
-print(df)
+## Tabla interactiva
 
-#4. Creación de nuevas columnas y agregación de datos
-df <- df %>% mutate(eficiencia = consumo/potencia)
-print(df)
-df <- df %>% group_by(cyl) %>% summarise(consumoMedio=mean(consumo), potenciaMax=max(potencia))
-print(df)
+```{r dt-table}
+datatable(mtcars, options = list(pageLength = 5),
+          caption = "Tabla interactiva del dataset `mtcars`.")
+```
 
-#5. Creación del segundo dataframe y unión de dataframes
-df <- as.data.frame(mtcars)
-print(df)
-df <- df %>% select(mpg,cyl,hp,gear)
-print(df)
-df <- df %>% rename(consumo=mpg)
-print(df)
-df <- df %>% rename(potencia=hp)
-print(df)
-df <- df %>% mutate(eficiencia = consumo/potencia)
-dfAux <- data.frame(
-  gear = c(3, 4, 5),
-  tipo_transmision = c("Manual", "Automática", "Semiautomática")
-)
-print(df)
-dfFinal <- df %>% left_join(dfAux, by = "gear")
-print(dfFinal)
+## Gráfico
 
-#6. Transformación de formatos
-dfFinal <- pivot_longer(dfFinal, cols = c(consumo, potencia, eficiencia), names_to = "variable", values_to = "valor")
-print(dfFinal)
-dfFinal <- dfFinal %>% group_by(cyl, gear, tipo_transmision)
-print(dfFinal)
-dfFinal <- pivot_wider(dfFinal,names_from = valor, values_from = seen)
-print(dfFinal)
+Para visualizar la relación entre el peso del automóvil (`wt`) y el consumo de combustible (`mpg`), generamos un gráfico de dispersión:
+
+```{r scatter-plot, echo=FALSE}
+library(ggplot2)
+ggplot(mtcars, aes(x = wt, y = mpg)) +
+  geom_point(color = "blue", size = 3) +
+  labs(
+    title = "Relación entre peso y consumo de combustible",
+    x = "Peso (1000 lbs)",
+    y = "Millas por galón (mpg)"
+  ) +
+  theme_minimal()
+```
